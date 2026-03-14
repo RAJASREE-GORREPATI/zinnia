@@ -1,0 +1,58 @@
+<?php
+session_start();
+require 'connections/localhost.php';
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Your Cart</title>
+    <style>
+        table {
+            width: 70%;
+            margin: 40px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ccc;
+        }
+        th {
+            background-color: #eee;
+        }
+    </style>
+</head>
+<body>
+<h2 style="text-align:center;">Your Shopping Cart</h2>
+<?php
+if (!empty($_SESSION['cart'])) {
+    $ids = implode(',', array_keys($_SESSION['cart']));
+    $query = "SELECT product_id, name, price FROM products WHERE product_id IN ($ids)";
+    $result = $conn->query($query);
+
+    echo "<table><tr><th>Product</th><th>Price</th><th>Quantity</th><th>Total</th></tr>";
+
+    $grand_total = 0;
+    while ($row = $result->fetch_assoc()) {
+        $pid = $row['product_id'];
+        $quantity = $_SESSION['cart'][$pid];
+        $total = $row['price'] * $quantity;
+        $grand_total += $total;
+
+        echo "<tr>
+                <td>{$row['name']}</td>
+                <td>₹{$row['price']}</td>
+                <td>$quantity</td>
+                <td>₹$total</td>
+              </tr>";
+    }
+    echo "<tr><td colspan='3'><strong>Grand Total</strong></td><td><strong>₹$grand_total</strong></td></tr>";
+    echo "</table>";
+} else {
+    echo "<p style='text-align:center;'>Your cart is empty.</p>";
+}
+$conn->close();
+?>
+</body>
+</html>
